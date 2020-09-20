@@ -1,0 +1,153 @@
+---
+title: "Project 1: Solving a linear inverse problem"
+author: Technical Computation in the Earth Sciences
+date: 21st September 2020
+---
+
+If you've taken any courses involving statistics or data analysis, or read such papers from the literature, you've probably heard terms like \`\`inversion", or \`\`linear regression", or \`\`least-squares estimation".
+However, these terms are fairly often introduced without explaining them in linear algebra terms.
+If you're programming in a language where matrices and vectors are well-supported though, linear algebra is probably actually the most convenient and intuitive approach to these topics.
+
+**Introduction.1: Matrix multiplication as linear combination**
+
+Say we have a column vector ``x`` representing some independent variable -- be it time, distance, or so on -- containing some number of values, for instance:
+```julia; term=true
+x = 1:10. # This step range will behave like a 10x1 array (i.e., a column vector)
+```
+We may then consider constructing a matrix ``A``, each column of which contains some different function of x, for example:
+```julia; term=true
+A = [x.^0 x.^1 x.^2]
+```
+
+[Multiplying](https://en.wikipedia.org/wiki/Matrix_multiplication#Illustration) this matrix ``A`` by a column vector of parameters ``\phi``, for instance
+```julia; term=true
+ϕ = [1,2,3] # n.b.: [1,2,3] gives you a column vector, [1 2 3] gives you a row vector
+y = A * ϕ
+```
+gives us a *linear combination* of the columns of A, in this case equivalent to the function
+$$
+\vspace{-1em}
+\begin{equation*}
+y = 1x^0 + 2x^1 + 3x^3
+\end{equation*}
+$$
+
+**Introduction.2: Inversion**
+
+So that's nice and all, but what if we want to go the other way? Start with the independent variable ``x`` and dependent variable ``y`` and *invert* for the parameters ``\phi``?
+Well, if the forward equation is
+$$
+\vspace{-1em}
+\begin{equation}
+y = A * \phi
+\end{equation}
+$$
+then we ought to be able to rearrange things a bit to get ``\phi`` on it's own.
+We have to be a bit careful though, since we're dealing with matrices, and there is strictly speaking no such thing as matrix division, and even matrix multiplication isn't commutative.
+However, if we could find a matrix ``A_l^{-1}`` such that
+$$
+\vspace{-1em}
+\begin{equation*}
+A_l^{-1} * A = \mathbb{1}
+\end{equation*}
+$$
+(in other words, a [*left inverse*](https://en.wikipedia.org/wiki/One-sided_inverse#Matrices) of ``A``), then we could simply multiply both sides by ``A_l^{-1}``:
+$$
+\vspace{-1.5em}
+\begin{align*}
+A_l^{-1} * &y = A_l^{-1} * A * \phi \\
+A_l^{-1} * &y = \mathbb{1} * \phi \\
+A_l^{-1} * &y = \phi
+\end{align*}
+$$
+It turns out that as long as the columns of ``A`` are [*linearly independent*](https://en.wikipedia.org/wiki/Linear_independence), and ``A`` has more rows than columns, then there *is* such a matrix ``A_l^{-1}``, specifically (Equation 11.5 of Boyd & Vandenberghe):
+$$
+\vspace{-0.5em}
+\begin{equation}
+A_l^{-1} = (A^T A)^{-1} A^T
+\end{equation}
+$$
+where ``A^T`` is the transpose of ``A`` (or conjugate transpose if ``A`` were complex).
+This partiular left-inverse for a (square or tall) matrix with linearly-independent columns is sometimes also called the *pseudo-inverse*.
+One point to note is that this equation still involves a matrix inversion ``(A^T A)^{-1}``, but since ``A^T A`` is square, that's [comparatively easy](https://en.wikipedia.org/wiki/Invertible_matrix).
+In any case, given equation 2, we can readily calculate this left-inverse in Julia and use it to *invert* for our original ``\phi``
+```julia; term=true
+Aᴵ = (A' * A)^-1 * A'
+Aᴵ * y
+```
+Pretty close, minus some floating-point rounding error.
+But what if our ``y`` isn't entirely accurate? Say ``\phi`` is unknown, and ``y`` is coming from noisy experimental observations?
+It turns out that in this more general case, what ``A_l^{-1} * y`` really inverts for is the ``\phi`` that *minimizes* the square of the distance between ``y`` and ``A*\phi``,
+$$
+\vspace{-1em}
+\begin{equation}
+{\left\lVert A*\phi - y \right\rVert}^2
+\end{equation}
+$$
+In other words, ``(A^T A)^{-1} A^T y`` gives us the *ordinary least squares* solution for the parameters ``\phi`` (c.f. Equation 12.5 and thereabouts of Boyd & Vandenberghe).
+
+In the event of a less-than-perfect fit, the residual given by Equation 3 may be used as a measure of the misfit of the least-squares solution, though it is more useful if analytical uncertainties are known (which they may not always be).
+
+There are also some generalizations which (though not directly required for the rest of the project) could be useful to know about when working with data with known uncertainties or (even better) covariances:
+
+(1) [Weighted least-squares](https://en.wikipedia.org/wiki/Weighted_least_squares)
+$$
+\vspace{-1.5em}
+\begin{equation}
+\phi = (A^T W A)^{-1} W A^T y
+\end{equation}
+$$
+where W is a diagonal matrix of weights equal to the inverse of the squared analytical uncertainties, i.e.
+`W = diagm(1./σ.^2)` where ``\sigma`` is the (one-sigma) uncertainty of the observations ``y``.
+
+(2) [Generalized least squares](https://en.wikipedia.org/wiki/Generalized_least_squares)
+$$
+\vspace{-1.5em}
+\begin{equation}
+\phi = (A^T \Omega^{-1} A)^{-1} \Omega^{-1} A^T y
+\end{equation}
+$$
+where ``\Omega`` is the [covariance matrix](https://en.wikipedia.org/wiki/Covariance_matrix) of the observations ``y``.
+
+
+#
+**Linear inversion with a real dataset: partition coefficients**
+
+Petrologists often use mineral/melt *partition coefficients* to model the expected concentrations of trace elements in various minerals. For some trace element ``El``, the partition coefficient is defined as
+$$
+\vspace{-1em}
+\begin{equation*}
+D_{El}^{mineral/melt} = \frac{[El]_{mineral}}{[El]_{melt}}
+\end{equation*}
+$$
+the concentration of E in the mineral divided by the concentration of E in the surrounding melt from which that mineral is crystallizing.
+At equilibrium, this coefficient is approximately constant for a given element in a given mineral, with some dependence on temperature and magma composition.
+In particular, for a set of trace elements of varying ionic radius but constant ionic charge, mineral/melt partition coefficients are well-modelled as functions of the form ``log(D) = a + b*r^2 + c*r^3`` where ``r`` is ionic radius.
+
+Consider the following partition coefficient dataset, for the 3+ rare earth elements in the mineral zircon at 1000 K, an experimental study by Claiborne et al., 2018.
+```julia; out_width="10cm"
+REE3 = ["La","Pr","Nd","Sm","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu",] # 3+ rare earth elements
+r = [0.106,0.101,0.100,0.096,0.094,0.092,0.091,0.089,0.088,0.087,0.086,0.085,] # Ionic Radii
+D = [NaN, NaN, 0.01, 0.165, 0.827, NaN, 5.17, 9.4, 14.4, 22.0, 21.0, 24.0] # Partition coefficients
+
+using Plots
+p = plot(r, D, seriestype=:scatter, xlabel="Ionic radius", ylabel="Partition coefficient", yscale=:log10, label="", framestyle=:box)
+savefig(p, "Figure1.pdf")
+display(p)
+```
+Write a program to use linear least-squares inversion to estimate the parameters ``a, b, c`` and predict the partition coefficients of the missing elements (the ones for which ``D`` is `NaN`).
+The `isnan` function may be useful, in addition to the material we have talked about above.
+
+In more detail such mineral/melt partition coefficients can be related to more physically-meaningful parameters: a mineral-specific ``D_0``, an optimal radius ``r_0`` and an activation energy ``E`` (related in turn to bulk modulus), as shown in Equation 2 of [Blundy and Wood, 1994](https://doi.org/10.1038/372452a0).
+Given the parameters ``a``, ``b``, and ``c`` for which we have just inverted, you may be able to solve for ``D_0``,``r_0``,``E`` in terms of ``a``, ``b``, and ``c`` using ordinary algebra, keeping in mind that ``N_A = 6.022e23`` atoms/mol and ``R = 8.3145``  J/(mol K).
+
+#
+**Linear inversion with a real dataset: choose-your-own-dataset edition**
+
+Pick a real-world dataset of your choice for which linear least-squares inversion can help you determine some parameter of interest.
+Do the columns of ``A`` necessarily have to be powers of ``x`` or can we use other functions as well, within some limits?
+
+#
+**Report**
+
+In addition to your code, please describe your results and their significance in the format of a brief lab report with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
