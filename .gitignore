@@ -1,6 +1,9 @@
 .DS_Store
 *.pdf
 *.tex
+*.pages
+*.key
+figure components
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
