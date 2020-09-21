@@ -122,10 +122,10 @@ D_{El}^{mineral/melt} = \frac{[El]_{mineral}}{[El]_{melt}}
 $$
 the concentration of E in the mineral divided by the concentration of E in the surrounding melt from which that mineral is crystallizing.
 At equilibrium, this coefficient is approximately constant for a given element in a given mineral, with some dependence on temperature and magma composition.
-In particular, for a set of trace elements of varying ionic radius but constant ionic charge, mineral/melt partition coefficients are well-modelled as functions of the form ``log(D) = a + b*r^2 + c*r^3`` where ``r`` is ionic radius.
+In particular, for a set of trace elements of varying ionic radius but constant ionic charge, mineral/melt partition coefficients are well-modelled at constant temperature as functions of the form ``log(D) = a + b*r^2 + c*r^3`` where ``r`` is ionic radius.
 
-Consider the following partition coefficient dataset, for the 3+ rare earth elements in the mineral zircon at 1000 K, an experimental study by Claiborne et al., 2018.
-```julia; out_width="10cm"
+Consider the following partition coefficient dataset, for the 3+ [rare earth elements](https://en.wikipedia.org/wiki/Rare_earth_elements) in the mineral [zircon](https://en.wikipedia.org/wiki/Zircon) *at 1000 K*, an experimental study by Claiborne et al., 2018.
+```julia; out_width="15cm"
 REE3 = ["La","Pr","Nd","Sm","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu",] # 3+ rare earth elements
 r = [0.106,0.101,0.100,0.096,0.094,0.092,0.091,0.089,0.088,0.087,0.086,0.085,] # Ionic Radii
 D = [NaN, NaN, 0.01, 0.165, 0.827, NaN, 5.17, 9.4, 14.4, 22.0, 21.0, 24.0] # Partition coefficients
@@ -135,11 +135,13 @@ p = plot(r, D, seriestype=:scatter, xlabel="Ionic radius", ylabel="Partition coe
 savefig(p, "Figure1.pdf")
 display(p)
 ```
-Write a program to use linear least-squares inversion to estimate the parameters ``a, b, c`` and predict the partition coefficients of the missing elements (the ones for which ``D`` is `NaN`).
+Write a program to use linear least-squares inversion to estimate the parameters ``a, b, c`` at this temperature, and predict the partition coefficients of the missing elements (the ones for which ``D`` is `NaN`).
 The `isnan` function may be useful, in addition to the material we have talked about above.
 
-In more detail such mineral/melt partition coefficients can be related to more physically-meaningful parameters: a mineral-specific ``D_0``, an optimal radius ``r_0`` and an activation energy ``E`` (related in turn to bulk modulus), as shown in Equation 2 of [Blundy and Wood, 1994](https://doi.org/10.1038/372452a0).
-Given the parameters ``a``, ``b``, and ``c`` for which we have just inverted, you may be able to solve for ``D_0``,``r_0``,``E`` in terms of ``a``, ``b``, and ``c`` using ordinary algebra, keeping in mind that ``N_A = 6.022e23`` atoms/mol and ``R = 8.3145``  J/(mol K).
+**Optional**: In more detail, such mineral/melt partition coefficients can be related to more physically-meaningful parameters: a mineral- (and magma)-specific ``D_0``, an optimal radius ``r_0`` and an activation energy ``E`` (related in turn to bulk modulus), as shown in Equation 2 of [Blundy and Wood, 1994](https://doi.org/10.1038/372452a0).
+Given the parameters ``a``, ``b``, and ``c`` for which we have just inverted, you should be able to solve for ``D_0``,``r_0``, and ``E`` in terms of ``a``, ``b``, and ``c`` using ordinary algebra, keeping in mind that ``N_A = 6.022e23`` atoms/mol and ``R = 8.3145``  J/(mol K).
+These equations also make it a bit easier to extrapolate observations of partition coefficients at one temperature to other temperatures.
+*Since this paper gets a bit technical, it's totally optional, but it's good fun if you have time.*
 
 #
 **Linear inversion with a real dataset: choose-your-own-dataset edition**
@@ -147,7 +149,23 @@ Given the parameters ``a``, ``b``, and ``c`` for which we have just inverted, yo
 Pick a real-world dataset of your choice for which linear least-squares inversion can help you determine some parameter of interest.
 Do the columns of ``A`` necessarily have to be powers of ``x`` or can we use other functions as well, within some limits?
 
+Be sure to think carefully about, and describe in your report (below):
+* Why the function you're inverting describes your dataset
+* What assumptions you're making
+* Any deeper context for the parameters you've inverted (e.g., anything analagous to the context of the Blundy & Wood paper for the partition coefficient example above)?
+
+Some places to look for relevant data might include:
+* https://github.com/awesomedata/awesome-public-datasets (see climate and earth sections)
+* https://www.iedadata.org/
+* https://data.usgs.gov/datacatalog/
+
+among many others
+
+*Make sure you have picked out your real dataset before the start of the next class!*
+
 #
 **Report**
 
 In addition to your code, please describe your results and their significance in the format of a brief lab report with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
+
+*Due 9/27 by midnight your time*
