@@ -93,9 +93,8 @@ t_N - \hat{t_N}\\
 \delta t_0\\
 \end{bmatrix}
 ```
-
-When implementing this in Julia, it may be convenient to write a function, let's call it `G(x₀, y₀, z₀, t₀)` that calculates the vector of predicted arrival times ``\hat{t}``, and another `∂G(x₀, y₀, z₀, t₀)` that calculates the matrix ``\boldsymbol{A}``.
 Keep in mind also that since we're working now with an iterative method, you'll have to start with some initial guess for `ϕ`.
+When implementing this in Julia, it may be convenient to write a function, let's call it `G(x₀, y₀, z₀, t₀, ...)` that calculates the vector of predicted arrival times ``\hat{t}``, and another `∂G(x₀, y₀, z₀, t₀, ...)` that calculates the matrix ``\boldsymbol{A}``.
 
 #
 **Part 1**
@@ -120,7 +119,7 @@ somevarname = ncread("project2.nc", "somevarname") # Using the variable names yo
 
 Assess the performance of your function from part 1.
 How do you know when you have run enough iterations?
-You may wish to make some number of plots or graphs, considering such variables as the residual (the misfit between model and data) and the magnitude of change in model parameters between iterations.
+You may wish to make some number of plots or graphs, considering such variables as the residual (i.e., the misfit between model and data) and the magnitude of change in model parameters between iterations.
 
 #
 **Report**
