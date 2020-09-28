@@ -8,14 +8,22 @@ date: 28th September, 2020
 
 Last week we dealt with some problems of the form
 ```math
+\vspace{-0.3cm}
+\begin{equation*}
 y = a*F(x) + b*G(x) + ...
+\vspace{0.3cm}
+\end{equation*}
 ```
 where ``a, b, etc.`` are constant and ``F(x), G(x), etc.`` are different (linearly independent) functions of `x`. 
 In particular, we learned to *invert* for the constants ``a``, ``b``, ``...``, given ``x`` and ``y``.
 
 But what if we want to invert for one or more constants *internal to* the nonlinear function(s) of x?
 ```math 
+\vspace{-0.6cm}
+\begin{equation*}
 y = F(x, a, b, ...) + G(x, e, f, ...) + ...
+\vspace{0.3cm}
+\end{equation*}
 ```
 This is no longer a linear inverse problem, but is quite possibly``^*`` still a *linearizable* inverse problem.
 
@@ -38,34 +46,52 @@ The only difference is that we'll be doing it in several dimensions at once, usi
 Consider an earthquake that occurrs at a position ``(x_0, y_0, z_0)`` at time `` t_0``. 
 If the seismic wave propagates with a seismic phase velocity ``v``, the **predicted** arrival time ``\hat{t_i}`` at some seismic station ``i`` at location ``x_i, y_i, z_i`` will be
 ```math
+\vspace{-0.3cm}
 \begin{equation}
 \hat{t_i} = \frac{\sqrt{(x_i - x_0)^2 + (y_i - y_0)^2 + (z_i - z_0)^2}}{v} + t_0
+\vspace{0.3cm}
 \end{equation}
 ```
 We wish to find the values of ``x_0, y_0, z_0,`` and `` t_0`` that minimize the sum squared *misfit* (or *residual*) between the *observed* (``t_i``) and *predicted* (``\hat{t_i}``) data over all ``i``
 ```math
+\vspace{-0.3cm}
+\begin{equation*}
 \sum\limits_{i=1}^N (\hat{t_i} - t_i)^2
+\vspace{0.3cm}
+\end{equation*}
 ```
 or in other words, the *least squares solution* for `ϕ = [x₀, y₀, z₀, t₀]`.
 
 Whereas in Project 1 we had a forward equation of the form
 ```math
+\vspace{-0.3cm}
+\begin{equation*}
 \hat{y} = \boldsymbol{A}\ \phi
+\vspace{0.3cm}
+\end{equation*}
 ```
 and an inverse equation of the form
 ```math
+\vspace{-0.3cm}
+\begin{equation*}
 \phi = (\boldsymbol{A}^T \boldsymbol{A})^{-1} \boldsymbol{A}^T y
+\vspace{0.3cm}
+\end{equation*}
 ```
 now, we will have some very analagous equations that let us solve for increasingly better iterative *adjustments* to ``\phi``, denoted ``\delta\phi``:
 ```math
+\vspace{-0.3cm}
 \begin{equation}
 \hat{y} = \boldsymbol{A}\ \delta\phi
+\vspace{0.3cm}
 \end{equation}
 ```
 for the forward equation and
 ```math
+\vspace{-0.3cm}
 \begin{equation}
 \delta\phi = (\boldsymbol{A}^T \boldsymbol{A})^{-1} \boldsymbol{A}^T y
+\vspace{0.3cm}
 \end{equation}
 ```
 for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\boldsymbol{y}`` is now a column vector of *residuals*, and ``\boldsymbol{\delta\phi}`` is a column vector of *adjustments* to our last proposed source location:
@@ -95,7 +121,7 @@ t_N - \hat{t_N}\\
 ```
 Keep in mind also that since we're working now with an iterative method, you'll have to start with some initial guess for `ϕ`.
 When implementing this in Julia, it may be convenient to write a function, let's call it `G(x₀, y₀, z₀, t₀, ...)` that calculates the vector of predicted arrival times ``\hat{t}``, and another `∂G(x₀, y₀, z₀, t₀, ...)` that calculates the matrix ``\boldsymbol{A}``.
-If you want to use the  ``\hat{ }``  symbol in Julia to differentiate between observed (no hat) and calculated (yes hat) quantities , you can type it with `\``hat`{tab}, which will append it to the last character you typed before that.
+If you want to use the \`\` ``\hat{ }`` " symbol in Julia to differentiate between observed (no hat) and calculated (yes hat) quantities, you can type it with `\``hat{tab}`, which will append it to the last character you typed before that.
 
 #
 **Part 1**
