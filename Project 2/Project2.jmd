@@ -68,7 +68,7 @@ for the forward equation and
 \delta\phi = (\boldsymbol{A}^T \boldsymbol{A})^{-1} \boldsymbol{A}^T y
 \end{equation}
 ```
-for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\delta\phi`` is a column vector of *adjustments* to our last proposed source location, and ``y`` is now a column vector of *residuals*:
+for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\boldsymbol{y}`` is now a column vector of *residuals*, and ``\boldsymbol{\delta\phi}`` is a column vector of *adjustments* to our last proposed source location:
 ```math
 \boldsymbol{A} = 
 \renewcommand\arraystretch{1.5}
@@ -78,13 +78,6 @@ for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\d
 \vdots                            & \vdots                            & \vdots                            & \vdots                            \\
 \frac{\partial t_N}{\partial x_0} & \frac{\partial t_N}{\partial y_0} & \frac{\partial t_N}{\partial z_0} & \frac{\partial t_N}{\partial t_0} \\
 \end{bmatrix}
-\ \ \ \ \ \ \ \ \ \delta\phi = 
-\begin{bmatrix}
-\delta x_0\\
-\delta y_0\\
-\delta z_0\\
-\delta t_0\\
-\end{bmatrix}
 \ \ \ \ \ \ \ \ \ \ y = 
 \begin{bmatrix}
 t_1 - \hat{t_1}\\
@@ -92,9 +85,16 @@ t_2 - \hat{t_2}\\
 \vdots\\
 t_N - \hat{t_N}\\
 \end{bmatrix}
+\ \ \ \ \ \ \ \ \ \delta\phi = 
+\begin{bmatrix}
+\delta x_0\\
+\delta y_0\\
+\delta z_0\\
+\delta t_0\\
+\end{bmatrix}
 ```
 
-When implementing this in Julia, it may be convenient to write a function, let's call it `G(...)` that calculates ``\hat{t}`` and another `∂G(...)` that calculates A.
+When implementing this in Julia, it may be convenient to write a function, let's call it `G(x₀, y₀, z₀, t₀)` that calculates the vector of predicted arrival times ``\hat{t}``, and another `∂G(x₀, y₀, z₀, t₀)` that calculates the matrix ``\boldsymbol{A}``.
 Keep in mind also that since we're working now with an iterative method, you'll have to start with some initial guess for `ϕ`.
 
 #
@@ -128,5 +128,5 @@ You may wish to make some number of plots or graphs, considering such variables 
 In addition to your code, please describe your results and their significance in the format of a brief lab report with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
 Some questions you might think about involve the strenghts and weaknesses of this arrival-time-based method, including:
 * Are we making any specific assumptions about the medium through which our seismic waves are propagating?
-* If so, where / over what scale might these be good or bad assumptions?
+* If so, *where* / *over what scale* might these be good or bad assumptions?
 * Are there any conditions where this P-wave-arrival-time-only method might have particular advantages relative to the P-versus-S-wave arrival time lag method?
