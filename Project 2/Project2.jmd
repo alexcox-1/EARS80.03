@@ -95,6 +95,7 @@ t_N - \hat{t_N}\\
 ```
 Keep in mind also that since we're working now with an iterative method, you'll have to start with some initial guess for `ϕ`.
 When implementing this in Julia, it may be convenient to write a function, let's call it `G(x₀, y₀, z₀, t₀, ...)` that calculates the vector of predicted arrival times ``\hat{t}``, and another `∂G(x₀, y₀, z₀, t₀, ...)` that calculates the matrix ``\boldsymbol{A}``.
+If you want to use the  ``\hat{ }``  symbol in Julia to differentiate between observed (no hat) and calculated (yes hat) quantities , you can type it with `\``hat`{tab}, which will append it to the last character you typed before that.
 
 #
 **Part 1**
