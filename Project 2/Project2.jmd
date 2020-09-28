@@ -82,7 +82,7 @@ now, we will have some very analagous equations that let us solve for increasing
 ```math
 \vspace{-0.3cm}
 \begin{equation}
-\hat{y} = \boldsymbol{A}\ \delta\phi
+\hat{\gamma} = \boldsymbol{A}\ \delta\phi
 \vspace{0.3cm}
 \end{equation}
 ```
@@ -90,11 +90,11 @@ for the forward equation and
 ```math
 \vspace{-0.3cm}
 \begin{equation}
-\delta\phi = (\boldsymbol{A}^T \boldsymbol{A})^{-1} \boldsymbol{A}^T y
+\delta\phi = (\boldsymbol{A}^T \boldsymbol{A})^{-1} \boldsymbol{A}^T \gamma
 \vspace{0.3cm}
 \end{equation}
 ```
-for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\boldsymbol{y}`` is now a column vector of *residuals*, and ``\boldsymbol{\delta\phi}`` is a column vector of *adjustments* to our last proposed source location:
+for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\boldsymbol{\gamma}`` is a column vector of *residuals*, and ``\boldsymbol{\delta\phi}`` is a column vector of *adjustments* to our last proposed source location:
 ```math
 \boldsymbol{A} = 
 \renewcommand\arraystretch{1.5}
@@ -104,7 +104,7 @@ for the inverse, where ``\boldsymbol{A}`` is now a matrix of *derivatives*, ``\b
 \vdots                            & \vdots                            & \vdots                            & \vdots                            \\
 \frac{\partial t_N}{\partial x_0} & \frac{\partial t_N}{\partial y_0} & \frac{\partial t_N}{\partial z_0} & \frac{\partial t_N}{\partial t_0} \\
 \end{bmatrix}
-\ \ \ \ \ \ \ \ \ \ y = 
+\ \ \ \ \ \ \ \ \ \ \gamma = 
 \begin{bmatrix}
 t_1 - \hat{t_1}\\
 t_2 - \hat{t_2}\\
