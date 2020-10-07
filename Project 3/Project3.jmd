@@ -143,9 +143,10 @@ Consider a geologic scenario where you have in stratigraphic order
 * A large basalt flow with a plagioclase Ar-Ar age of 15.89 +/- 0.29 Ma
 
 Use the Metropolis algorithm to combine all three of these constraints to calculate a single posterior estimate for the age of the critically important horizon in the middle.
-What does this distribution look like?
+What does this distribution look like? How much do the posterior mean and standard deviation for the horizon of interest differ from the prior ones?
 
 Note that these uncertainties are reported (as most Geochronologists tend to) following the *two-sigma* convention, meaning actual ``\sigma`` is half of the stated uncertainty in each case.
+You can asume that all of these ages an uncertainties are Normally distributed; laboratory geochron analyses generally tend to be Normal thanks to the CLT.
 
 #
 **Part 2**
