@@ -72,10 +72,10 @@ Now, because these likelihoods can be very large or very small, it actually ends
 So:
 ```math
 \vspace{-0.5cm}
-\begin{equation*}
+\begin{equation}
 \ell\ell(x | \mu, \sigma) = -\frac{(x-\mu)^2}{2 \sigma^2}
 \vspace{0.3cm}
-\end{equation*}
+\end{equation}
 ```
 Is this starting to remind you of anything *least-squares-ish* yet?
 
