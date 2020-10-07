@@ -81,12 +81,12 @@ Is this starting to remind you of anything *least-squares-ish* yet?
 
 ``\vspace{0.5cm}``
 
-``^*``*\`\`Normal" infinity is the cardinality of the Integers, aka the number elements in the set of Integers. The cardinality of the Reals is [provably](https://en.wikipedia.org/wiki/Diagonal_proof) way larger than that. Terrifying, I tell you!*
+``^*``*\`\`Normal" infinity is the cardinality of the Integers, aka the number elements in the set of Integers. The cardinality of the Reals is [provably](https://en.wikipedia.org/wiki/Diagonal_proof) larger than that. It's an entirely different kind of infinity altogether! Terrifying, I tell you.*
 
 **Introduction.2: Turning the math into code.**
 
 As you might guess, we're going to be needing a loop here. 
-To get things started, I'm going to give you here a rough outline of how I might start turning the Metropolis Algorithm into actual Julia code
+To get things started, here's a rough outline of how I might start turning the Metropolis Algorithm into actual Julia code
 
 ```julia; eval=false
 
@@ -161,7 +161,7 @@ Use the Metropolis algorithm to combine all of the data on hand to calculate the
 In addition to your code, please describe your results and their significance in the format of a brief lab report (i.e., some *paragraphs of text*) with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
 
 What are some of the advantages and limitations of this method? 
-If you knew the arrival time uncertainty for the earthquake arrival times in Project 2, could you use the Metropolis algorithm to estimate the earthquake origin and uncertainty?
+If you knew the arrival time uncertainty for the earthquake arrival times in Project 2 (say, two seconds), could you use the Metropolis algorithm to estimate the earthquake origin and uncertainty?
 
 ``\vspace{5cm}``
 
