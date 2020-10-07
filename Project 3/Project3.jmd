@@ -9,6 +9,7 @@ date: 7th October, 2020
 Desipte the fancy name, \`\`[Markov Chain](https://en.wikipedia.org/wiki/Markov_chain) [Monte Carlo](https://en.wikipedia.org/wiki/Monte_Carlo_method)" basically just means some technique where we generate a long sequence of numbers, each of which is a random perturbation of the last one.
 
 For this project, we will be using one particular algorithm that falls into this category, called the [Metropolis algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm#Intuition), a subset of a slightly more complicated approach called the Metropolis-Hastings algorithm.
+This is discussed in all its fully mathey detail in the [Gelman et al. (2013)](http://www.stat.columbia.edu/~gelman/book/) Bayesian Data Analysis book, especially Chapter 11.
 
 As the \`\`Markov Chain" part might imply, this is an iterative approach -- we don't get to the answer in one step; instead there is a procedure that we repeat many times.
 Breifly, this procedure is:
@@ -24,12 +25,11 @@ r = \frac{l(\phi_p | y)}{l(\phi | y)}
 \end{equation}
 ```
 4.    If the proposal is accepted, that means set the new ``\phi`` equal to ``\phi_p``. If the proposal is rejected, ``\phi_p`` is thrown away and ``\phi`` stays the same. Record the current accepted ``\phi`` (whatever that ends up being) as a step of the Markov Chain
-* Repeat steps 1-4 many many times.
+5.    Repeat steps 1-4 many many times.
 
 Note that just as in Project 2, it will take some time for this to converge on the right answer. 
 This is called *burn-in*. 
 After this, the *post-burnin* parts of the chain (accepted values of ``\phi``) are called the *stationary distribution*, and they give us our \`\`[*posterior*](https://en.wikipedia.org/wiki/Posterior_probability)" estimate for ``\phi``.
-
 
 So what is this *likelihood*? 
 Likelihood in a Bayesian (including MCMC) context means something that's *proportional to* a probability.
@@ -81,8 +81,7 @@ Is this starting to remind you of anything *least-squares-ish* yet?
 
 ``\vspace{0.5cm}``
 
-``^*``*\`\`Normal" infinity is the cardinality of the Integers, aka the number elements in the set of Integers. The cardinality of the Reals is provably infinitely larger than that. Terrifying, I tell you!*
-
+``^*``*\`\`Normal" infinity is the cardinality of the Integers, aka the number elements in the set of Integers. The cardinality of the Reals is [provably](https://en.wikipedia.org/wiki/Diagonal_proof) way larger than that. Terrifying, I tell you!*
 
 **Introduction.2: Turning the math into code.**
 
