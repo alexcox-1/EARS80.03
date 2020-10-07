@@ -159,7 +159,31 @@ Use the Metropolis algorithm to combine all of the data on hand to calculate the
 #
 **Report**
 
-In addition to your code, please describe your results and their significance in the format of a brief lab report with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
+In addition to your code, please describe your results and their significance in the format of a brief lab report (i.e., some *paragraphs of text*) with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
 
 What are some of the advantages and limitations of this method? 
 If you knew the arrival time uncertainty for the earthquake arrival times in Project 2, could you use the Metropolis algorithm to estimate the earthquake origin and uncertainty?
+
+``\vspace{5cm}``
+
+Some of the things you might think about for computational project reports *in general, if applicable* include:
+* Code correctnes and quality
+    + Code runs and produces correct result 
+    + Code is commented and has decent code style 
+    + Code is efficient enough to run in reasonable time for this problem (I.e., if small data, efficiency is not important and simplicity can take precedent; with large problems code must be efficient enough to be practical) 
+* Conceptual grasp of methods 
+    + Explanation of why method used is appropriate for this question 
+    + Any equations implemented are given and explained 
+    + Assumptions made in applying this method are discussed 
+    + Limitations of this method are given 
+* Figures 
+    + Any data which would be best communicated with a figure has a figure 
+    + Figures are readable 
+    + Figure captions give any context necessary to understand figures  
+* Understanding and communicating meaning of your result
+    + What is the scientific question addressed here? 
+    + What was the computational result? 
+    + What is the scientific meaning of the computational results? 
+    + What questions remain unanswered by computational results, and do the results suggest any additional questions?
+
+(N.B., you can treat this more as a checklist than a list of questions to answer!)
