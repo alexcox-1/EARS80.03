@@ -1,0 +1,165 @@
+---
+title: "Project 3: Implementing a Metropolis walker"
+author: Technical Computation in the Earth Sciences
+date: 7th October, 2020
+---
+
+**Introduction.1: Markov Chain Monte Carlo & the Metropolis Algorithm.**
+
+Desipte the fancy name, \`\`[Markov Chain](https://en.wikipedia.org/wiki/Markov_chain) [Monte Carlo](https://en.wikipedia.org/wiki/Monte_Carlo_method)" basically just means some technique where we generate a long sequence of numbers, each of which is a random perturbation of the last one.
+
+For this project, we will be using one particular algorithm that falls into this category, called the [Metropolis algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm#Intuition), a subset of a slightly more complicated approach called the Metropolis-Hastings algorithm.
+
+As the \`\`Markov Chain" part might imply, this is an iterative approach -- we don't get to the answer in one step; instead there is a procedure that we repeat many times.
+Breifly, this procedure is:
+0.    Start with some initial guess for the parameters of interest ``\phi``
+1.    Propose a variation ``\phi_p`` by adding some random perturbation to the last ``\phi``. The perturbation must be symmetric (equal probability of increasing or decreasing ``\phi``) but otherwise can be any random number.
+2.    Calculate the *likelihoods* (more on that in a minute) of ``\phi`` and ``\phi_p`` given the data ``y``.  In math notation, that's ``l(\phi | y)`` and ``l(\phi_p | y)``
+3.    If ``l(\phi_p | y) > l(\phi | y)``, *accept* the proposal ``\phi_p`` with probability 1. Else, if ``l(\phi_p | y) < l(\phi | y)``, *accept* it with probability equal to the ratio of likelihoods. 
+```math
+\vspace{-0.3cm}
+\begin{equation}
+r = \frac{l(\phi_p | y)}{l(\phi | y)}
+\vspace{0.3cm}
+\end{equation}
+```
+4.    If the proposal is accepted, that means set the new ``\phi`` equal to ``\phi_p``. If the proposal is rejected, ``\phi_p`` is thrown away and ``\phi`` stays the same. Record the current accepted ``\phi`` (whatever that ends up being) as a step of the Markov Chain
+* Repeat steps 1-4 many many times.
+
+Note that just as in Project 2, it will take some time for this to converge on the right answer. 
+This is called *burn-in*. 
+After this, the *post-burnin* parts of the chain (accepted values of ``\phi``) are called the *stationary distribution*, and they give us our \`\`[*posterior*](https://en.wikipedia.org/wiki/Posterior_probability)" estimate for ``\phi``.
+
+
+So what is this *likelihood*? 
+Likelihood in a Bayesian (including MCMC) context means something that's *proportional to* a probability.
+Ok, great, how do we get that? 
+While you all are probably somewhat familiar with *discrete* probability distributions (i.e., the probability distribution of a fair coin toss is 50% heads, 50% tails), for most things we'll be working with in the physical sciences we're in the realm of [*continuous* probability distributions](https://en.wikipedia.org/wiki/Continuous_probability_distribution).
+
+The continuous probability distribution we'll be working today is the [*Gaussian*](https://en.wikipedia.org/wiki/Normal_distribution) (aka *Normal*) distribution.
+The Gaussian distribution is defined by its [*probability density function*](https://en.wikipedia.org/wiki/Probability_density_function)
+ ```math
+\vspace{-0.3cm}
+\begin{equation}
+f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2 \sigma^2}}
+\vspace{0.3cm}
+\end{equation}
+```
+
+As an aside, the Gaussian distribution is special in something vaugely analagous to the way that the ``\ell_2`` norm and the arithemetic mean are special. 
+Looking at the equation, you might even see some hint of this (notice any powers of two?).
+In particular, according to something called the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), combinations of other distributions tend to become Normally distributed.
+
+Anyways, getting a probability from a *probability density function* (PDF) like Equation 2 usually means having to take an integral.
+For some Real number ``x`` drawn from a Normal distribution, the probability that ``x`` falls between two Real numbers ``a`` and ``b`` is equal to the integral of Equation 2 from ``a`` to ``b``.
+
+This has the somewhat spooky consequence that the probability of drawing any *particular* Real number from a continuous probability distribution (say 5.000000000..., or ``\pi``, or etc.) is technically *zero*. 
+Even though every time you draw from a continuous probability distribution, some particular real number is exactly what you'll get. 
+This is at some level a consequence of the fact that the Real numbers are [uncountably infinite](https://en.wikipedia.org/wiki/Cardinality_of_the_continuum)*, and also just generally terrifying, but that's another subject.
+
+Since we only need to worry about getting something *proportional* to the probability though, we can ignore all of that and just use the PDF directly (which is indeed proportional to the probability of observing some number in the infinitessimally small neighborhood around ``x = y``). 
+In fact, we can do even better than that, and throw out any constant terms in the PDF as well.
+After all, they'd only cancel when we take the ratio of the likelihoods in Equation 1, so 
+
+```math
+\vspace{-0.5cm}
+\begin{equation*}
+l(x | \mu, \sigma) = e^{-\frac{(x-\mu)^2}{2 \sigma^2}}
+\vspace{0.3cm}
+\end{equation*}
+```
+Now, because these likelihoods can be very large or very small, it actually ends up being convenient, to avoid floating-point rounding error on the computer, to actually work with _log_ likelihoods.
+So:
+```math
+\vspace{-0.5cm}
+\begin{equation*}
+\ell\ell(x | \mu, \sigma) = -\frac{(x-\mu)^2}{2 \sigma^2}
+\vspace{0.3cm}
+\end{equation*}
+```
+Is this starting to remind you of anything *least-squares-ish* yet?
+
+``\vspace{0.5cm}``
+
+``^*``*\`\`Normal" infinity is the cardinality of the Integers, aka the number elements in the set of Integers. The cardinality of the Reals is provably infinitely larger than that. Terrifying, I tell you!*
+
+
+**Introduction.2: Turning the math into code.**
+
+As you might guess, we're going to be needing a loop here. 
+To get things started, I'm going to give you here a rough outline of how I might start turning the Metropolis Algorithm into actual Julia code
+
+```julia; eval=false
+
+# Log-likelihood function for a Normal distribution
+normpdf_ll(μ::Number,σ::Number,x::Number) = -(x-μ)*(x-μ) / (2*σ*σ)
+
+#Set number of iterations
+N = ...
+lldist = Array{Float64,1}(undef, N)
+ϕdist = Array{Float64,1}(undef, N) # Or possibly with more dimensions if ϕ is a vector
+
+let # Only necessary if you're in global scope. Maybe write a function so you don't need this
+
+    # Initial guess
+    ϕ = ...
+    ϕₚ = copy(ϕ)
+    ll = normpdf_ll(μ, σ, ϕ) # Or something like that. Possibly a lot more complicatied, or the sum of multiple terms
+
+    for i=1:N
+        # Prepare proposal
+        ϕₚ = ϕ + ... #Some random adjustment 
+        ## Or if ϕ is a vector
+        #copyto!(ϕₚ, ϕ) # Beware of ϕₚ = ϕ with vectors because of assignment-by-reference
+        #ϕₚ += ... #Some random adjustments
+
+        # Calculate log likelihood of proposal
+        llₚ = normpdf_ll(μ, σ, ϕₚ) # Or something like that. Possibly a lot more complicatied, or the sum of multiple terms
+
+        # Check if proposal should be accepted
+        if log(rand()) < (llₚ-ll) # Remember that subtracting the logs is equal to dividing the likelihoods
+            ll = llₚ
+            ... # Probably also do something with ϕ and ϕₚ here
+        end
+
+        # Record the current accepted proposal
+        lldist[i] = ll
+        ϕdist[i] = ϕ # Again, possibly with more dimensions if ϕ is a vector
+    end
+end
+```
+
+Note again that just as in Project 2, it will take some time for this to converge on the right answer. 
+The post-burning parts of `ϕdist` though give us our \`\`*posterior*" estimate for ``\phi``. 
+Among other things, this means that the mean of the post-burnin parts of `ϕdist` gives us or estimate for the mean of ``\phi``, and their standard deviation gives us our estimate for the uncertainty of ``\phi``.
+
+``\vspace{0.5cm}``
+
+#
+**Part 1**
+Consider a geologic scenario where you have in stratigraphic order
+
+* A rhyolitic ash bed, with a U-Pb zircon age of 14.592 +/- 0.083 Ma, overlying...
+* A critically-important fossil-bearing horizon, with an age previously approximately estimated by biostratigraphic correlation to other sections, of 15 +/- 2 Ma, overlying...
+* A large basalt flow with a plagioclase Ar-Ar age of 15.89 +/- 0.29 Ma
+
+Use the Metropolis algorithm to combine all three of these constraints to calculate a single posterior estimate for the age of the critically important horizon in the middle.
+What does this distribution look like?
+
+Note that these uncertainties are reported (as most Geochronologists tend to) following the *two-sigma* convention, meaning actual ``\sigma`` is half of the stated uncertainty in each case.
+
+#
+**Part 2**
+
+Just as you've finished your analysis, the paleontologists come back from the field. 
+They've discovered an new fossil-bearing horizon below the last one, but still above the basalt. 
+They also found some volcanic sanidine in this new horizon with an Ar-Ar age of 14.95 +/- 0.19 Ma (two-sigma).
+Use the Metropolis algorithm to combine all of the data on hand to calculate the most accurate posterior ages you can for *both* of the fossil-bearing strata.
+
+#
+**Report**
+
+In addition to your code, please describe your results and their significance in the format of a brief lab report with one or more figures. While you may collaborate with others while coding (as long as this is clearly noted in comments within your code), the report should be purely your own work.
+
+What are some of the advantages and limitations of this method? 
+If you knew the arrival time uncertainty for the earthquake arrival times in Project 2, could you use the Metropolis algorithm to estimate the earthquake origin and uncertainty?
