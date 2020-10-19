@@ -94,13 +94,13 @@ Sounds fancy, but just means combining multiple of the above.
 **Part 1**
 
 Consider two simple for loops operating on a large array A
-```julia; exec=false
+```julia; eval=false
 for i = 1:length(A)
     A[i] = foo(A[i])
 end
 ```
 versus
-```julia; exec=false
+```julia; eval=false
 A[1] = foo(A[1])
 for i = 2:length(A)
     A[i] = foo(A[i]) / foo(A[i-1])
