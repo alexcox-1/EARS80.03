@@ -1,0 +1,143 @@
+---
+title: "Project 4: Introduction to Parallel Programming"
+author: Technical Computation in the Earth Sciences
+date: 19th October, 2020
+---
+
+**Introduction.1: The need for parallel programming.**
+
+It has been observed that the number of transistors in a new CPU generally doubles about every two years, an observation termed \`\`Moore's Law."
+For many years, from ~1970 until ~2004, the clock speed (in Hertz) of new CPUs also reliably doubled about every two years.
+Since 2004, however, there has been virtually no improvement in CPU clock speed.
+
+This is sometimes attributed to  \`\`breakdown of Moore's law", but that isn't technically correct -- number of transistors on a CPU is still happily doubling away.
+Instead, what broke is something called [_Dennard Scaling_](https://en.wikipedia.org/wiki/Dennard_scaling), the relationship between transistor size and power consumption.
+Clock speed is limited, more or less, by how fast we can make a transistor switch on and off without it melting.
+Since making transistors smaller no longer makes them more power efficient, we can't keep making them faster any more.
+
+So instead, the extra transistors from Moore's Law now go into making [_more cores_](https://en.wikipedia.org/wiki/Multi-core_processor).
+To take advantage of these new cores though, we have to write code that can run on multiple cores at the same time -- AKA _in parallel_.
+
+
+**Introduction.2: Types of parallel programming.**
+
+* SIMD
+
+_Apply a single instruction to multiple data in the same CPU core_
+
+[SIMD](https://en.wikipedia.org/wiki/Simd) stands for \`\`Single Instruction, Multiple Data", which is a pretty good description of what it means: applying the same operations to multiple numbers at the same time.
+GPUs do this, but your CPU actually can too (albeit at a smaller scale).
+```julia; eval=false
+using LoopVectorization
+@avx for i = 1:N
+    # do something
+end
+```
+The only thing you have to be careful of here is that the individual iterations of the loop have to be _entirely independent of each other_. 
+In other words, the `i=2` iteration can't depend on the result of the `i=1` or any other previous iteration, and so on.
+
+See also: [Advanced Vector Extensions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) / [Vector Processor](https://en.wikipedia.org/wiki/Vector_processor)
+
+``\vspace{0.5cm}``
+
+* Shared-memory parallel programming
+
+_Multiple tasks, on different CPU cores, but still all with access to the same memory_
+
+This is also fairly simple. In Julia, you can do this with `Base.Threads.@threads`. 
+You can set the number of threads you want (up to the number of cores in your CPU) in your Juno (\`\`Julia-client" package) or VSCode (\`\`language-julia" extension) preferences, or from the command line by running `julia --threads 4` (or some other number).
+If you're wondering how many threads your Julia repl currently has access to, you can check with `Base.Threads.nthreads()`
+
+```julia; eval=false
+Base.Threads.@threads for i = 1:N
+    # do something
+end
+```
+This will effectively partition the `for` loop into `Base.Threads.nthreads()` different smaller loops, each of which then runs on a different core of your CPU.
+Since you still have access to the same memory, your different threads can operate on different elements of the same array.
+The restrictions from above about the iterations of the loop being independent still apply.
+There is also some new overhead from scheduling and coordinating these threads.
+
+In a compiled language like C or Fortran, you might do the same thing with [OpenMP](https://www.openmp.org/).
+Keep in mind though that this only works for as many cores as you have on a _single_ CPU -- if you want to coordinate between different CPUs, you'll need something like MPI instead.
+
+* Distributed-memory parallel programming
+
+_Multiple tasks, possibly on multiple CPUs, each with their own separate memory_
+ 
+You don't have to use MPI for this problem set, but here's an example of the parallel version of \`\`Hello World" in case you want to try it out.
+```julia; eval=false
+using MPI
+
+# Initialize
+MPI.Init()
+
+# Find out who and where we are
+size = MPI.Comm_size(MPI.COMM_WORLD)
+rank = MPI.Comm_rank(MPI.COMM_WORLD)
+print("Hello from $rank of $size processors!\n")
+
+# Finalize
+MPI.Finalize()
+```
+To run an MPI program, you first have to install an MPI runtime (either [OpenMPI](https://www.open-mpi.org/) or [MPICH](https://www.mpich.org/)) and then run your program from the command line with (for Julia programs) something along the lines of `mpiexec -np N julia ./hello.jl` (where `N` is the number of MPI tasks you want).
+If your different MPI tasks have to talk to each other, then you have to explicitly have them talk to each other with functions like `MPI.send` and `MPI.recv`.
+
+Pretty much all modern supercomputers, like those on the [Top500](https://www.top500.org/), run programs that coordinate communication between nodes with MPI, though they may use other things within the node -- which brings us to:
+
+``\vspace{0.5cm}``
+
+* \`\`Hierarchical parallelism"
+Sounds fancy, but just means combining multiple of the above.
+
+#
+**Part 1**
+
+Consider two simple for loops operating on a large array A
+```julia; exec=false
+for i = 1:length(A)
+    A[i] = foo(A[i])
+end
+```
+versus
+```julia; exec=false
+A[1] = foo(A[1])
+for i = 2:length(A)
+    A[i] = foo(A[i]) / foo(A[i-1])
+end
+```
+Which of these can be readily parallelized? Why or why not?
+
+#
+**Part 2**
+
+Consider a simple function
+```julia
+function foo(x; N=10)
+    for _ = 1:N # The _ is because this is a dummy variable
+        x = sqrt(x)
+    end
+    return x
+end
+```
+
+Generate a random 10000 by 10000 matrix
+```julia; eval=false
+A = rand(10000,10000)
+```
+and write a normal function `apply foo` that loops through each dimension of A with plain `for` loops, applying `foo` to each element of A, and time the performance of your function with something along the lines of 
+
+```julia; eval=false
+using BenchmarkTools
+@benchmark apply_foo_serial($A)
+```
+Should it matter in what order you index `A`?
+If it does, pick the fastest one.
+
+Then make a new function with an `@avx` added in front of your `for` loop.
+Does this change the benchmark performance?
+
+Finally, write a version of `apply_foo` that uses `Base.Threads.@threads`.
+Benchmark the run times again, adjusting the number of threads available from 1 to 8.
+How does the performance change as a function of the number of threads?
+Can you tell how many cores your CPU has from looking at a plot of run times versus number of threads?
